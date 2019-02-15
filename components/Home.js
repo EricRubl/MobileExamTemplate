@@ -1,30 +1,30 @@
 import React from 'react';
+import autoBind from 'react-autobind';
 import {View, Text, Button} from 'react-native';
 
-class Home extends React.Component{
+class Home extends React.Component {
 
-    constructor(props){
+    constructor(props) {
         super(props);
-        this.onUser = this.onUser.bind(this);
-        this.onOwner = this.onOwner.bind(this);
+        autoBind(this);
     }
 
-    onUser(){
-        this.props.navigation.navigate("UserLandingPage");
+    onEmployee() {
+        this.props.navigation.navigate("EmployeeLandingPage");
     }
 
-    onOwner(){
+    onOwner() {
         this.props.navigation.navigate("OwnerLandingPage");
     }
 
-    render(){
-        return(
+    render() {
+        return (
             <View>
                 <Text style={{textAlign: 'center'}}>
-                    Select your role:
+                    Choose a dashboard
                 </Text>
-                <Button onPress={this.onUser} title={"Uhsdgfjhsg"}/>
-                <Button onPress={this.onOwner} title={"Public"}/>
+                <Button onPress={this.onEmployee} title={"Employee"}/>
+                <Button onPress={this.onOwner} title={"Owner"}/>
             </View>
         )
     }

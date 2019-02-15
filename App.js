@@ -24,7 +24,7 @@ export default class App extends React.Component {
 
 const AppNavigator = createStackNavigator({
         Login: Home,
-        UserLandingPage: UserLandingPage,
+        EmployeeLandingPage: UserLandingPage,
         OwnerLandingPage: OwnerLandingPage,
         LoanBike: LoanBike,
         BikeDetails: BikeDetails,

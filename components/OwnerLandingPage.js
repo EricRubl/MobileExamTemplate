@@ -1,33 +1,40 @@
 import React from 'react';
-import {View, Text, NetInfo, ScrollView} from 'react-native';
+import autoBind from 'react-autobind';
+import {View, Picker, NetInfo, ScrollView} from 'react-native';
 import {Button, ListItem} from "react-native-elements";
-import Spinner from "react-native-loading-spinner-overlay";
-const restApi = require('.././client/restClient');
+import * as api from '../client/restClient';
 
-class OwnerLandingPage extends React.Component{
+class OwnerLandingPage extends React.Component {
 
 
-    constructor(props){
+    constructor(props) {
         super(props);
-        this.state={
-            requests:
-                [],
-            isConnected: true,
-            spinner: false
-        };
+        autoBind(this);
 
-        this.handleConnectionChange = this.handleConnectionChange.bind(this);
-        this.onReload = this.onReload.bind(this);
-        this.viewUsers = this.viewUsers.bind(this);
-        this.sendMessage = this.sendMessage.bind(this);
+        this.state = {
+            boats: [],
+            offlineBoats: [],
+            diffBoats: [],
+            isConnected: true,
+            selectedID: -1,
+            rides: 0,
+            name: '',
+            status: 'free',
+            seats: 0
+        };
     }
 
-    async componentWillMount(){
-        if(this.state.isConnected){
-            restApi.getAllMessages().then((requests) => this.setState({requests:requests}));
-        }
-        else
-        {
+    async componentWillMount() {
+        if (this.state.isConnected) {
+            api.getAllBoats().then((boats) => this.setState({boats: boats}));
+
+            if(api.getRecords().length === 0) {
+                this.state.boats.map(boat => api.addRecord(boat));
+            }
+
+            this.setState({offlineBoats: api.getRecords()});
+
+        } else {
             console.log("Offline mode");
         }
     }
@@ -40,62 +47,59 @@ class OwnerLandingPage extends React.Component{
         NetInfo.isConnected.removeEventListener('connectionChange', this.handleConnectionChange);
     }
 
-    handleConnectionChange = info =>  {
-        this.setState({ isConnected : info,
-            spinner: !info
+    handleConnectionChange = info => {
+        this.setState({
+            isConnected: info,
         });
         console.log("IsConnected to internet: " + info);
-        console.log("Spinner to internet: " + !info);
     };
 
-    onReload(){
-        this.setState({spinner: true});
-        setTimeout(() => {this.setState({spinner:false})},2000);
-    }
+    clearLocalStorage() {
+        if(this.state.offlineBoats.length > 0) {
+            api.clearStorage().then(this.setState({offlineBoats: []}));
+        }
+    };
 
-    viewUsers(){
-        this.props.navigation.navigate('Users', {});
-    }
+    render() {
+            const boats = this.state.isConnected ? this.state.boats : this.state.offlineBoats;
 
-    sendMessage(){
-        this.props.navigation.navigate('AddBike', {});
-    }
-
-    render(){
-        if(this.state.isConnected){
-            return(
+            return (
                 <ScrollView>
                     {
-                        this.state.requests.sort((a, b) => a.date < b.date).slice(0, 10).map((request) => (
+                        boats.filter(boat => boat.status === 'free').map((boat) => (
                             <ListItem
-                                key={request.id}
-                                title={`ID: ${request.id} Sender: ${request.sender} Receiver: ${request.receiver}`}
-                                subtitle={`Date: ${request.date} Text: ${request.text}`}>
+                                key={boat.id}
+                                title={`${boat.id} | ${boat.name} | ${boat.model}`}
+                                subtitle={`Seats: ${boat.seats} Rides: ${boat.rides}`}>
                             </ListItem>
                         ))
                     }
-                    <Button onPress={this.viewUsers} title={"See users"}/>
-                    <Button onPress={this.sendMessage} title={'Send message'}></Button>
+                    <Button onPress={this.clearLocalStorage} title={'Clear local storage'}/>
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            height: 100,
+                            padding: 20,
+                        }}
+                    >
+                    <Picker
+                        selectedValue={this.state.selectedID}
+                        style={{height: 50, width: 50}}
+                        onValueChange={itemValue => this.setState({selectedID: itemValue})}
+                    >
+                            {boats.map(boat => <Picker.Item key={boat.id} label={boat.id.toString()} value={boat.id} />)}
+                    </Picker>
+                    <Picker
+                        selectedValue={this.state.status}
+                        style={{height: 50, width: 50}}
+                        onValueChange={itemValue => this.setState({status: itemValue})}
+                    >
+                        <Picker.Item key={'free'} label={'Free'} value={'free'} />
+                        <Picker.Item key={'busy'} label={'Busy'} value={'busy'} />
+                    </Picker>
+                    </View>
                 </ScrollView>
-            )
-        }
-        else
-        {
-            return(
-                <View>
-                    <Spinner
-                        visible={this.state.spinner}
-                        textContent={'Loading...'}
-                    />
-                    <Text>
-                        You are offline. Please try again
-                    </Text>
-                    <Button onPress={this.onReload} title={"Reload"}/>
-
-                </View>
-            )
-        }
-
+            );
     }
 }
 
