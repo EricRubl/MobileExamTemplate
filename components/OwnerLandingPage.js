@@ -1,8 +1,9 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, Picker, NetInfo, ScrollView} from 'react-native';
+import {View, NetInfo, ScrollView} from 'react-native';
 import {Button, ListItem} from "react-native-elements";
-import * as api from '../client/restClient';
+import * as API from '../client/restClient';
+import * as LocalStorage from '../client/localStorage';
 
 class OwnerLandingPage extends React.Component {
 
@@ -13,29 +14,28 @@ class OwnerLandingPage extends React.Component {
 
         this.state = {
             boats: [],
-            offlineBoats: [],
-            diffBoats: [],
+            updates: [],
             isConnected: true,
-            selectedID: -1,
-            rides: 0,
-            name: '',
-            status: 'free',
-            seats: 0
         };
     }
 
     async componentWillMount() {
+        await this.update();
+    }
+
+    async update() {
+        const updates = await LocalStorage.getAllUpdates();
+        let boats = await LocalStorage.getAllBoats();
+
         if (this.state.isConnected) {
-            api.getAllBoats().then((boats) => this.setState({boats: boats}));
-
-            if(api.getRecords().length === 0) {
-                this.state.boats.map(boat => api.addRecord(boat));
-            }
-
-            this.setState({offlineBoats: api.getRecords()});
-
+            API.getAllBoats().then(boats => {
+                if (LocalStorage.getAllBoats().length === 0) {
+                    boats.map(boat => LocalStorage.addBoat(boat));
+                }
+                this.setState({boats: boats, updates: updates});
+            });
         } else {
-            console.log("Offline mode");
+            this.setState({boats: boats, updates: updates});
         }
     }
 
@@ -48,25 +48,43 @@ class OwnerLandingPage extends React.Component {
     }
 
     handleConnectionChange = info => {
-        this.setState({
-            isConnected: info,
-        });
+        if(info && this.state.updates.length > 0) {
+            this.state.updates.map(async update => {
+                if(update.category === 'change') {
+                    await API.changeBoat(update.id, update.name, update.status, update.seats);
+                }
+            });
+
+            LocalStorage.clearUpdates().then(this.setState({isConnected: info, updates: []}));
+        } else {
+            this.setState({
+                isConnected: info,
+            });
+        }
         console.log("IsConnected to internet: " + info);
     };
 
     clearLocalStorage() {
-        if(this.state.offlineBoats.length > 0) {
-            api.clearStorage().then(this.setState({offlineBoats: []}));
+        if (LocalStorage.getAllBoats().length > 0) {
+            LocalStorage.clearStorage().then(() => {
+                if (!this.state.isConnected) {
+                    this.setState({boats: []})
+                }
+            });
         }
     };
 
-    render() {
-            const boats = this.state.isConnected ? this.state.boats : this.state.offlineBoats;
+    changeDetails() {
+        this.props.navigation.navigate("ChangeBoatDetails", { refresh: () => this.update() });
+    }
 
-            return (
-                <ScrollView>
+    render() {
+
+        return (
+            <View style={{flexDirection: 'column'}}>
+                <ScrollView style={{height: '40%'}}>
                     {
-                        boats.filter(boat => boat.status === 'free').map((boat) => (
+                        this.state.boats.filter(boat => boat.status === 'free').map((boat) => (
                             <ListItem
                                 key={boat.id}
                                 title={`${boat.id} | ${boat.name} | ${boat.model}`}
@@ -74,32 +92,25 @@ class OwnerLandingPage extends React.Component {
                             </ListItem>
                         ))
                     }
-                    <Button onPress={this.clearLocalStorage} title={'Clear local storage'}/>
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            height: 100,
-                            padding: 20,
-                        }}
-                    >
-                    <Picker
-                        selectedValue={this.state.selectedID}
-                        style={{height: 50, width: 50}}
-                        onValueChange={itemValue => this.setState({selectedID: itemValue})}
-                    >
-                            {boats.map(boat => <Picker.Item key={boat.id} label={boat.id.toString()} value={boat.id} />)}
-                    </Picker>
-                    <Picker
-                        selectedValue={this.state.status}
-                        style={{height: 50, width: 50}}
-                        onValueChange={itemValue => this.setState({status: itemValue})}
-                    >
-                        <Picker.Item key={'free'} label={'Free'} value={'free'} />
-                        <Picker.Item key={'busy'} label={'Busy'} value={'busy'} />
-                    </Picker>
-                    </View>
                 </ScrollView>
-            );
+                <View style={{height: '20%'}}>
+                    <Button onPress={this.clearLocalStorage} title={'Clear local storage'}/>
+                    <Button onPress={this.changeDetails} title={'Change Details'}/>
+                    <Button onPress={this.changeDetails} title={'Add Rides'}/>
+                </View>
+                <ScrollView style={{height: '40%'}}>
+                    {
+                        this.state.updates.map((update) => (
+                            <ListItem
+                                title={`${update.category} | ${update.id}`}
+                                subtitle={update.category === 'change' ? `Name: ${update.name} Seats: ${update.seats} Status: ${update.status}` : `Rides: ${update.rides}`}>
+                            </ListItem>
+                        ))
+                    }
+                </ScrollView>
+            </View>
+
+        );
     }
 }
 

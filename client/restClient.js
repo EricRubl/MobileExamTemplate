@@ -1,8 +1,6 @@
-import {AsyncStorage} from "react-native";
-
 const IP = '127.0.0.1';
-const port = '4022';
-const url = 'http://' + IP + ":" + port;
+const PORT = '4022';
+const URL = 'http://' + IP + ":" + PORT;
 
 function createRequestWithTimeout(ms, promise, message) {
     return new Promise(function (resolve, reject) {
@@ -13,83 +11,41 @@ function createRequestWithTimeout(ms, promise, message) {
     })
 }
 
-
-export async function clearStorage() {
-    await AsyncStorage.clear();
-}
-
-async function getMessages(user) {
+export async function getFreeBoats() {
     try {
-        console.log("GET /bikes. Getting all available messages from server.");
-        const requests = await createRequestWithTimeout(1000, fetch(`${url}/private/${user}`), "cannot access server");
-        return JSON.parse(requests._bodyText)
+        console.log("GET /boats. Getting free boats from server.");
+        const boats = await createRequestWithTimeout(1000, fetch(URL + '/boats'), "Cannot access server");
+        return JSON.parse(boats._bodyText)
     } catch (err) {
-        console.log("Error while getting all available bikes from server." + err.toString());
+        console.log("Error while getting free boats from server");
         return []
     }
 }
 
-async function getUsers() {
+export async function getBusyBoats() {
     try {
-        console.log("GET /bikes. Getting all available messages from server.");
-        const requests = await createRequestWithTimeout(1000, fetch(`${url}/users`), "cannot access server");
-        return JSON.parse(requests._bodyText)
+        console.log("GET /busy. Getting busy boats from server.");
+        const boats = await createRequestWithTimeout(1000, fetch(URL + '/busy'), "Cannot access server");
+        return JSON.parse(boats._bodyText)
     } catch (err) {
-        console.log("Error while getting all available bikes from server." + err.toString());
+        console.log("Error while getting busy boats from server");
         return []
     }
 }
 
 export async function getAllBoats() {
-    try {
-        console.log("GET /boats. Getting all boats from server.");
-        const boats = await createRequestWithTimeout(1000, fetch(url + '/boats'), "cannot access server");
-        return JSON.parse(boats._bodyText)
-    } catch (err) {
-        console.log("Error while getting all requests from server");
-        return []
-    }
+    let boats = [];
+
+    await getFreeBoats().then(free => boats = boats.concat(free));
+    await getBusyBoats().then(busy => boats = boats.concat(busy));
+
+    return boats;
 }
 
-async function getPrivateMessages(user) {
+export async function changeBoat(id, name, status, seats) {
     try {
-        console.log("GET /all. Getting all bikes from server.");
-        const requests = await createRequestWithTimeout(1000, fetch(`${url}/sender/${user}`), "cannot access server");
-        return JSON.parse(requests._bodyText)
-    } catch (err) {
-        console.log("Error while getting all requests from server");
-        return []
-    }
-
-}
-
-async function getReceivedMessages(user) {
-    try {
-        console.log("GET /all. Getting all bikes from server.");
-        const requests = await createRequestWithTimeout(1000, fetch(`${url}/receiver/${user}`), "cannot access server");
-        return JSON.parse(requests._bodyText)
-    } catch (err) {
-        console.log("Error while getting all requests from server");
-        return []
-    }
-
-}
-
-async function getBigRequests() {
-    try {
-        console.log("GET /big. Getting top still open requests from server.");
-        const requests = await createRequestWithTimeout(1000, fetch(url + '/big'), "cannot access server");
-        return JSON.parse(requests._bodyText)
-    } catch (err) {
-        console.log("Error while getting top open requests from server");
-        return []
-    }
-}
-
-async function loan(id) {
-    try {
-        console.log("POST /loan. Fulfilling a request.");
-        let request = fetch(url + '/loan', {
+        console.log("POST /change. Changing boat details.");
+        let request = fetch(URL + '/change', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -97,142 +53,15 @@ async function loan(id) {
             },
             body: JSON.stringify({
                 id: id,
+                name: name,
+                status: status,
+                seats: seats,
             })
         });
-        const response = await createRequestWithTimeout(1000, request, "cannot complete loan request on server");
+        const response = await createRequestWithTimeout(1000, request, "Cannot access server");
         return JSON.parse(response._bodyText).success;
     } catch (error) {
-        console.log("Error fulfill to server: ", error);
+        console.log("Error changing boat: ", error);
         return false;
-    }
-}
-
-async function returnBike(id) {
-    try {
-        console.log("POST /return. Fulfilling a request.");
-        let request = fetch(url + '/return', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                id: id,
-            })
-        });
-        const response = await createRequestWithTimeout(1000, request, "cannot complete return request on server");
-        return JSON.parse(response._bodyText).success;
-    } catch (error) {
-        console.log("Error return to server: ", error);
-        return false;
-    }
-
-}
-
-async function deleteMessage(id) {
-    try {
-        console.log("DELETE /request. Deleting a request.");
-        let deleteRequest = fetch(url + '/message/' + id, {
-            method: 'DELETE',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            }
-        });
-        const response = await createRequestWithTimeout(1000, deleteRequest, "cannot complete delete request on server");
-        return JSON.parse(response._bodyText).success;
-    } catch (error) {
-        // Error saving data
-        console.log("Error while deleting the request: ", error);
-        return false;
-    }
-}
-
-async function addBike(request) {
-    try {
-        console.log("POST /request. Adding a new request.");
-        let addRequest = fetch(url + '/message', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(
-                request
-            )
-        });
-        const response = await createRequestWithTimeout(3000, addRequest, "cannot complete addition operation on server");
-        if (response._bodyText.id !== null) {
-            //we have error
-            console.log(response._bodyText);
-            return JSON.parse(response._bodyText.text);
-        } else {
-            console.log("Added successfully");
-            return "Added successfully";
-        }
-    } catch (error) {
-        // Error saving data
-        return false;
-    }
-}
-
-
-export async function addRecord(record) {
-    try {
-        let records = await AsyncStorage.getItem('MESSAGES');
-        if (records == null) {
-            records = [];
-        } else
-            records = JSON.parse(records);
-        await AsyncStorage.setItem('MESSAGES', JSON.stringify([...records, record]));
-        return true;
-    } catch (error) {
-        // Error retrieving data
-        console.log("Error adding fulfilled request to async storage: ", error);
-        return false;
-    }
-}
-
-export async function getRecords() {
-    try {
-        const records = await AsyncStorage.getItem('MESSAGES');
-        if (records !== null) {
-            return JSON.parse(records);
-        } else
-            return [];
-    } catch (error) {
-        // Error retrieving data
-        console.log("Error retrieving records from local storage: ", error);
-        return [];
-    }
-}
-
-async function setUserName(record) {
-    try {
-        let records = await AsyncStorage.getItem('USERNAME');
-        if (records == null) {
-            records = [];
-        } else
-            records = JSON.parse(records);
-        await AsyncStorage.setItem('USERNAME', JSON.stringify([...records, record]));
-        return true;
-    } catch (error) {
-        // Error retrieving data
-        console.log("Error adding fulfilled request to async storage: ", error);
-        return false;
-    }
-}
-
-async function getUserName() {
-    try {
-        const records = await AsyncStorage.getItem('USERNAME');
-        if (records !== null) {
-            return JSON.parse(records);
-        } else
-            return '';
-    } catch (error) {
-        // Error retrieving data
-        console.log("Error retrieving records from local storage: ", error);
-        return '';
     }
 }
