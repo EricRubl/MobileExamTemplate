@@ -5,7 +5,7 @@ import {Button, ListItem, Text} from "react-native-elements";
 import * as API from '../client/restClient';
 import * as LocalStorage from '../client/localStorage';
 
-class ChangeBoatDetails extends React.Component {
+class AddRides extends React.Component {
 
     constructor(props) {
         super(props);
@@ -15,9 +15,8 @@ class ChangeBoatDetails extends React.Component {
             boats: [],
             isConnected: true,
             selectedID: -1,
-            name: '',
-            free: true,
-            seats: '0',
+            rides: 0,
+            increment: '0'
         };
     }
 
@@ -54,15 +53,15 @@ class ChangeBoatDetails extends React.Component {
         console.log("IsConnected to internet: " + info);
     };
 
-    async changeDetails() {
-        const status = this.state.free ? 'free' :  'busy';
+    async addRides() {
+        const rides = parseInt(this.state.increment);
 
-        await LocalStorage.changeBoat(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
+        await LocalStorage.addRides(this.state.selectedID, rides + this.state.rides);
 
         if(this.state.isConnected) {
-            await API.changeBoat(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
+            await API.addRides(this.state.selectedID, rides);
         } else {
-            await LocalStorage.addUpdate({category: 'change', id: this.state.selectedID, name: this.state.name, status: status, seats: parseInt(this.state.seats)});
+            await LocalStorage.addUpdate({category: 'rides', id: this.state.selectedID, rides: rides});
         }
 
         const reload = this.props.navigation.getParam('refresh');
@@ -72,8 +71,7 @@ class ChangeBoatDetails extends React.Component {
     }
 
     updateForm(event, boat) {
-        console.log(boat.status === 'free');
-        this.setState({selectedID: boat.id, name: boat.name, free: boat.status === 'free', seats: boat.seats})
+        this.setState({selectedID: boat.id, rides: boat.rides});
     }
 
 
@@ -93,39 +91,17 @@ class ChangeBoatDetails extends React.Component {
                         ))
                     }
                 </ScrollView>
-                <View
-                    style={{
-                        flexDirection: 'row',
-                        padding: 20,
-                        justifyContent: 'center',
-                    }}
-                >
-                    <TextInput
-                        style={{height: 40, width: 100, margin: 10, borderColor: 'gray', borderWidth: 1}}
-                        onChangeText={(text) => this.setState({name: text})}
-                        value={this.state.name}
-                    />
-                    <TextInput
-                        style={{height: 40, width: 100, margin: 10, borderColor: 'gray', borderWidth: 1}}
-                        onChangeText={(text) => this.setState({seats: text})}
-                        value={this.state.seats.toString()}
-                    />
-                </View>
-                <View
-                    style={{
-                        flexDirection: 'row',
-                        padding: 20,
-                        justifyContent: 'center',
-                    }}
-                >
-                    <Text>{this.state.isConnected ? 'yeee' : 'nuuu'}</Text>
-                    <Switch value={this.state.free} onValueChange={value => this.setState({free: value})}/>
-                </View>
-                <Button title={'Change details'} onPress={this.changeDetails}/>
+                <TextInput
+                    style={{height: 40, width: 100, margin: 10, borderColor: 'gray', borderWidth: 1}}
+                    onChangeText={(text) => this.setState({increment: text})}
+                    value={this.state.increment}
+                />
+                <Text>{`Current rides: ${this.state.rides}`}</Text>
+                <Button title={'Add rides'} onPress={this.addRides}/>
             </View>
 
         );
     }
 }
 
-export default ChangeBoatDetails;
+export default AddRides;

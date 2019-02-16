@@ -13,7 +13,9 @@ export async function addBoat(boat) {
         } else
             boats = JSON.parse(boats);
 
-        await AsyncStorage.setItem('BOATS', JSON.stringify([...boats, boat]));
+        boats.push(boat);
+
+        await AsyncStorage.setItem('BOATS', JSON.stringify(boats));
 
         return true;
     } catch (error) {
@@ -34,6 +36,26 @@ export async function changeBoat(id, name, status, seats) {
         boats[index].name = name;
         boats[index].status = status;
         boats[index].seats = seats;
+
+        await AsyncStorage.setItem('BOATS', JSON.stringify([...boats]));
+
+        return true;
+    } catch (error) {
+        console.log("Error adding fulfilled request to async storage: ", error);
+
+        return false;
+    }
+}
+
+export async function addRides(id, rides) {
+    try {
+        let boats = await AsyncStorage.getItem('BOATS');
+
+        boats = JSON.parse(boats);
+
+        const index = boats.findIndex(boat => boat.id === id);
+
+        boats[index].rides = rides;
 
         await AsyncStorage.setItem('BOATS', JSON.stringify([...boats]));
 

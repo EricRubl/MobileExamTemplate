@@ -26,14 +26,18 @@ class OwnerLandingPage extends React.Component {
     async update() {
         const updates = await LocalStorage.getAllUpdates();
         let boats = await LocalStorage.getAllBoats();
+        const localSize = boats.length;
 
         if (this.state.isConnected) {
-            API.getAllBoats().then(boats => {
-                if (LocalStorage.getAllBoats().length === 0) {
-                    boats.map(boat => LocalStorage.addBoat(boat));
+            boats = await API.getAllBoats();
+
+            if(localSize === 0) {
+                for(let i = 0; i < boats.length; ++i) {
+                    await LocalStorage.addBoat(boats[i]);
                 }
-                this.setState({boats: boats, updates: updates});
-            });
+            }
+
+            this.setState({boats: boats, updates: updates});
         } else {
             this.setState({boats: boats, updates: updates});
         }
@@ -47,39 +51,67 @@ class OwnerLandingPage extends React.Component {
         NetInfo.isConnected.removeEventListener('connectionChange', this.handleConnectionChange);
     }
 
-    handleConnectionChange = info => {
-        if(info && this.state.updates.length > 0) {
-            this.state.updates.map(async update => {
-                if(update.category === 'change') {
-                    await API.changeBoat(update.id, update.name, update.status, update.seats);
-                }
-            });
 
-            LocalStorage.clearUpdates().then(this.setState({isConnected: info, updates: []}));
+    handleConnectionChange = async info => {
+        console.log("IsConnected to internet la ouner: " + info);
+
+        const updates = this.state.updates;
+        if (info && updates.length > 0) {
+            for(let i = 0; i < updates.length; ++i) {
+                    if (updates[i].category === 'change') {
+                        await API.changeBoat(updates[i].id, updates[i].name, updates[i].status, updates[i].seats);
+                    }
+
+                }
+
+            await LocalStorage.clearUpdates();
+            this.setState({isConnected: info, updates: []})
         } else {
-            this.setState({
-                isConnected: info,
-            });
+            this.setState({isConnected: info});
         }
-        console.log("IsConnected to internet: " + info);
     };
 
-    clearLocalStorage() {
-        if (LocalStorage.getAllBoats().length > 0) {
-            LocalStorage.clearStorage().then(() => {
-                if (!this.state.isConnected) {
-                    this.setState({boats: []})
-                }
-            });
+    async clearLocalStorage() {
+        await LocalStorage.clearStorage();
+
+        if (!this.state.isConnected) {
+            this.setState({boats: [], updates: []});
+        } else {
+            this.setState({updates: []});
         }
     };
 
     changeDetails() {
-        this.props.navigation.navigate("ChangeBoatDetails", { refresh: () => this.update() });
+        this.props.navigation.navigate("ChangeBoatDetails", {refresh: () => this.update()});
+    }
+
+    addRides() {
+        this.props.navigation.navigate("AddRides", {refresh: () => this.update()});
+    }
+
+    async retryConnection() {
+        const conn = await NetInfo.isConnected.fetch();
+
+        if(conn) {
+            const updates = this.state.updates;
+            if (updates.length > 0) {
+                for(let i = 0; i < updates.length; ++i) {
+                    if (updates[i].category === 'change') {
+                        await API.changeBoat(updates[i].id, updates[i].name, updates[i].status, updates[i].seats);
+                    } else {
+                        await API.addRides(updates[i].id, updates[i].rides);
+                    }
+
+                }
+                await LocalStorage.clearUpdates();
+                this.setState({isConnected: true, updates: []})
+            } else {
+                this.setState({isConnected: true});
+            }
+        }
     }
 
     render() {
-
         return (
             <View style={{flexDirection: 'column'}}>
                 <ScrollView style={{height: '40%'}}>
@@ -96,7 +128,8 @@ class OwnerLandingPage extends React.Component {
                 <View style={{height: '20%'}}>
                     <Button onPress={this.clearLocalStorage} title={'Clear local storage'}/>
                     <Button onPress={this.changeDetails} title={'Change Details'}/>
-                    <Button onPress={this.changeDetails} title={'Add Rides'}/>
+                    <Button onPress={this.addRides} title={'Add Rides'}/>
+                    <Button onPress={this.retryConnection} disabled={this.state.isConnected} title={'Retry connection'}/>
                 </View>
                 <ScrollView style={{height: '40%'}}>
                     {

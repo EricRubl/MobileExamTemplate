@@ -65,3 +65,66 @@ export async function changeBoat(id, name, status, seats) {
         return false;
     }
 }
+
+export async function addRides(id, rides) {
+    try {
+        console.log("POST /rides. Changing boat details.");
+        let request = fetch(URL + '/rides', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: id,
+                rides: rides,
+            })
+        });
+        const response = await createRequestWithTimeout(1000, request, "Cannot access server");
+        return JSON.parse(response._bodyText).success;
+    } catch (error) {
+        console.log("Error adding rides: ", error);
+        return false;
+    }
+}
+
+export async function addBoat(name, model, seats) {
+    try {
+        console.log("POST /new. Adding boat.");
+        let request = fetch(URL + '/new', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                model: model,
+                seats: seats,
+            })
+        });
+        const response = await createRequestWithTimeout(1000, request, "Cannot access server");
+        return JSON.parse(response._bodyText).success;
+    } catch (error) {
+        console.log("Error adding boat: ", error);
+        return false;
+    }
+}
+
+export async function deleteBoat(id) {
+    try {
+        console.log("DELETE /boat. Deleting boat.");
+        let request = fetch(URL + '/boat/' + id.toString(), {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        });
+        const response = await createRequestWithTimeout(1000, request, "Cannot access server");
+        return JSON.parse(response._bodyText).success;
+    } catch (error) {
+        console.log("Error deleting boat: ", error);
+        return false;
+    }
+}
