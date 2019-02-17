@@ -1,6 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, Switch, NetInfo, ScrollView, TextInput} from 'react-native';
+import {View, NetInfo, ScrollView, TextInput, Alert} from 'react-native';
 import {Button, ListItem, Text} from "react-native-elements";
 import * as API from '../client/restClient';
 import * as LocalStorage from '../client/localStorage';
@@ -29,13 +29,24 @@ class AddRides extends React.Component {
 
         let boats;
 
-        if (conn) {
-            boats = await API.getAllBoats();
-        } else {
-            boats = await LocalStorage.getAllBoats();
-        }
+        try {
+            if (conn) {
+                boats = await API.getAllBoats();
+            } else {
+                boats = await LocalStorage.getAllBoats();
+            }
 
-        this.setState({boats: boats, isConnected: conn});
+            this.setState({boats: boats, isConnected: conn});
+        } catch (err) {
+            Alert.alert(
+                'Server error',
+                err.toString(),
+                [
+                    {text: 'OK'},
+                ],
+                {cancelable: true},
+            );
+        }
     }
 
     componentDidMount() {
@@ -58,10 +69,21 @@ class AddRides extends React.Component {
 
         await LocalStorage.addRides(this.state.selectedID, rides + this.state.rides);
 
-        if(this.state.isConnected) {
-            await API.addRides(this.state.selectedID, rides);
-        } else {
-            await LocalStorage.addUpdate({category: 'rides', id: this.state.selectedID, rides: rides});
+        try {
+            if(this.state.isConnected) {
+                await API.addRides(this.state.selectedID, rides);
+            } else {
+                await LocalStorage.addUpdate({category: 'rides', id: this.state.selectedID, rides: rides});
+            }
+        } catch (err) {
+            Alert.alert(
+                'Server error',
+                err.toString(),
+                [
+                    {text: 'OK'},
+                ],
+                {cancelable: true},
+            );
         }
 
         const reload = this.props.navigation.getParam('refresh');

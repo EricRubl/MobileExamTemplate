@@ -1,6 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, Switch, NetInfo, ScrollView, TextInput} from 'react-native';
+import {View, Switch, NetInfo, ScrollView, TextInput, Alert} from 'react-native';
 import {Button, ListItem, Text} from "react-native-elements";
 import * as API from '../client/restClient';
 import * as LocalStorage from '../client/localStorage';
@@ -30,13 +30,24 @@ class ChangeBoatDetails extends React.Component {
 
         let boats;
 
-        if (conn) {
-            boats = await API.getAllBoats();
-        } else {
-            boats = await LocalStorage.getAllBoats();
-        }
+        try {
+            if (conn) {
+                boats = await API.getAllBoats();
+            } else {
+                boats = await LocalStorage.getAllBoats();
+            }
 
-        this.setState({boats: boats, isConnected: conn});
+            this.setState({boats: boats, isConnected: conn});
+        } catch (err) {
+            Alert.alert(
+                'Server error',
+                err.toString(),
+                [
+                    {text: 'OK'},
+                ],
+                {cancelable: true},
+            );
+        }
     }
 
     componentDidMount() {
@@ -59,11 +70,23 @@ class ChangeBoatDetails extends React.Component {
 
         await LocalStorage.changeBoat(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
 
-        if(this.state.isConnected) {
-            await API.changeBoat(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
-        } else {
-            await LocalStorage.addUpdate({category: 'change', id: this.state.selectedID, name: this.state.name, status: status, seats: parseInt(this.state.seats)});
+        try {
+            if(this.state.isConnected) {
+                await API.changeBoat(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
+            } else {
+                await LocalStorage.addUpdate({category: 'change', id: this.state.selectedID, name: this.state.name, status: status, seats: parseInt(this.state.seats)});
+            }
+        } catch (err) {
+            Alert.alert(
+                'Server error',
+                err.toString(),
+                [
+                    {text: 'OK'},
+                ],
+                {cancelable: true},
+            );
         }
+
 
         const reload = this.props.navigation.getParam('refresh');
         reload();

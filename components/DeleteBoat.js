@@ -1,6 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, ScrollView} from 'react-native';
+import {View, ScrollView, Alert} from 'react-native';
 import {Button, ListItem, Text} from "react-native-elements";
 import * as API from '../client/restClient';
 
@@ -21,12 +21,34 @@ class DeleteBoat extends React.Component {
     }
 
     async update() {
-        const boats = await API.getAllBoats();
-        this.setState({boats: boats});
+        try {
+            const boats = await API.getAllBoats();
+            this.setState({boats: boats});
+        } catch (err) {
+            Alert.alert(
+                'Server error',
+                err.toString(),
+                [
+                    {text: 'OK'},
+                ],
+                {cancelable: true},
+            );
+        }
     }
 
     async deleteBoat() {
-        await API.deleteBoat(this.state.id);
+        try {
+            await API.deleteBoat(this.state.id);
+        } catch (err) {
+            Alert.alert(
+                'Server error',
+                err.toString(),
+                [
+                    {text: 'OK'},
+                ],
+                {cancelable: true},
+            );
+        }
 
         await this.update();
 

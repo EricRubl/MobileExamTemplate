@@ -18,7 +18,7 @@ export async function getFreeBoats() {
         return JSON.parse(boats._bodyText)
     } catch (err) {
         console.log("Error while getting free boats from server");
-        return []
+        throw Error();
     }
 }
 
@@ -29,15 +29,20 @@ export async function getBusyBoats() {
         return JSON.parse(boats._bodyText)
     } catch (err) {
         console.log("Error while getting busy boats from server");
-        return []
+        throw Error();
     }
 }
 
 export async function getAllBoats() {
     let boats = [];
 
-    await getFreeBoats().then(free => boats = boats.concat(free));
-    await getBusyBoats().then(busy => boats = boats.concat(busy));
+    try {
+        await getFreeBoats().then(free => boats = boats.concat(free));
+        await getBusyBoats().then(busy => boats = boats.concat(busy));
+    } catch (err) {
+        throw Error('Cannot get boats from the server 😥');
+    }
+
 
     return boats;
 }
@@ -62,7 +67,7 @@ export async function changeBoat(id, name, status, seats) {
         return JSON.parse(response._bodyText).success;
     } catch (error) {
         console.log("Error changing boat: ", error);
-        return false;
+        throw Error('Cannot change boat on the server 😥');
     }
 }
 
@@ -84,7 +89,7 @@ export async function addRides(id, rides) {
         return JSON.parse(response._bodyText).success;
     } catch (error) {
         console.log("Error adding rides: ", error);
-        return false;
+        throw Error('Cannot add rides on the server 😥');
     }
 }
 
@@ -107,7 +112,7 @@ export async function addBoat(name, model, seats) {
         return JSON.parse(response._bodyText).success;
     } catch (error) {
         console.log("Error adding boat: ", error);
-        return false;
+        throw Error('Cannot add boat on the server 😥');
     }
 }
 
@@ -125,6 +130,6 @@ export async function deleteBoat(id) {
         return JSON.parse(response._bodyText).success;
     } catch (error) {
         console.log("Error deleting boat: ", error);
-        return false;
+        throw Error('Cannot delete boat from the server 😥');
     }
 }

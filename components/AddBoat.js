@@ -1,7 +1,7 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, Switch, Picker, ScrollView, TextInput} from 'react-native';
-import {Button, ListItem, Text} from "react-native-elements";
+import {View, Picker, TextInput, Alert} from 'react-native';
+import {Button} from "react-native-elements";
 import * as API from '../client/restClient';
 
 class AddBoat extends React.Component {
@@ -18,7 +18,18 @@ class AddBoat extends React.Component {
     }
 
     async addBoat() {
-        await API.addBoat(this.state.name, this.state.model, parseInt(this.state.seats));
+        try {
+            await API.addBoat(this.state.name, this.state.model, parseInt(this.state.seats));
+        } catch (err) {
+            Alert.alert(
+                'Server error',
+                err.toString(),
+                [
+                    {text: 'OK'},
+                ],
+                {cancelable: true},
+            );
+        }
 
         const reload = this.props.navigation.getParam('refresh');
         reload();
