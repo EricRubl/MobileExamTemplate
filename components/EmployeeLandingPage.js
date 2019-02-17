@@ -1,6 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, ScrollView, Alert} from 'react-native';
+import {View, ScrollView, Alert, ActivityIndicator} from 'react-native';
 import {Button, ListItem} from "react-native-elements";
 import * as API from '../client/restClient';
 
@@ -13,6 +13,7 @@ class EmployeeLandingPage extends React.Component {
 
         this.state = {
             boats: [],
+            spinner: false
         };
     }
 
@@ -21,9 +22,11 @@ class EmployeeLandingPage extends React.Component {
     }
 
     async update() {
+        this.setState({spinner: true});
+
         try {
             const boats = await API.getAllBoats();
-            this.setState({boats: boats});
+            this.setState({boats: boats, spinner: false});
         } catch (err) {
             Alert.alert(
                 'Server error',
@@ -46,6 +49,7 @@ class EmployeeLandingPage extends React.Component {
 
     render() {
         return (
+            this.state.spinner ? <ActivityIndicator size="large" color="#0000ff" /> :
             <View style={{flexDirection: 'column'}}>
                 <ScrollView style={{height: '80%'}}>
                     {

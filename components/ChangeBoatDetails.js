@@ -1,6 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, Switch, NetInfo, ScrollView, TextInput, Alert} from 'react-native';
+import {View, Switch, NetInfo, ScrollView, TextInput, Alert, ActivityIndicator} from 'react-native';
 import {Button, ListItem, Text} from "react-native-elements";
 import * as API from '../client/restClient';
 import * as LocalStorage from '../client/localStorage';
@@ -18,6 +18,7 @@ class ChangeBoatDetails extends React.Component {
             name: '',
             free: true,
             seats: '0',
+            spinner: false
         };
     }
 
@@ -26,6 +27,8 @@ class ChangeBoatDetails extends React.Component {
     }
 
     async update() {
+        this.setState({spinner: true});
+
         const conn = await NetInfo.isConnected.fetch();
 
         let boats;
@@ -37,7 +40,7 @@ class ChangeBoatDetails extends React.Component {
                 boats = await LocalStorage.getAllBoats();
             }
 
-            this.setState({boats: boats, isConnected: conn});
+            this.setState({boats: boats, isConnected: conn, spinner: false});
         } catch (err) {
             Alert.alert(
                 'Server error',
@@ -66,6 +69,8 @@ class ChangeBoatDetails extends React.Component {
     };
 
     async changeDetails() {
+        this.setState({spinner: true});
+
         const status = this.state.free ? 'free' :  'busy';
 
         await LocalStorage.changeBoat(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
@@ -91,6 +96,8 @@ class ChangeBoatDetails extends React.Component {
         const reload = this.props.navigation.getParam('refresh');
         reload();
 
+        this.setState({spinner: false});
+
         await this.update();
     }
 
@@ -102,6 +109,7 @@ class ChangeBoatDetails extends React.Component {
 
     render() {
         return (
+            this.state.spinner ? <ActivityIndicator size="large" color="#0000ff" /> :
             <View style={{flexDirection: 'column'}}>
                 <ScrollView style={{height: '40%'}}>
                     {

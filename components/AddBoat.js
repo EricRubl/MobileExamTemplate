@@ -1,6 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, Picker, TextInput, Alert} from 'react-native';
+import {View, Picker, TextInput, Alert, ActivityIndicator} from 'react-native';
 import {Button} from "react-native-elements";
 import * as API from '../client/restClient';
 
@@ -14,10 +14,13 @@ class AddBoat extends React.Component {
             name: '',
             model: 'Serenity',
             seats: '0',
+            spinner: false
         };
     }
 
     async addBoat() {
+        this.setState({spinner: true});
+
         try {
             await API.addBoat(this.state.name, this.state.model, parseInt(this.state.seats));
         } catch (err) {
@@ -31,12 +34,15 @@ class AddBoat extends React.Component {
             );
         }
 
+        this.setState({spinner: false});
+
         const reload = this.props.navigation.getParam('refresh');
         reload();
     }
 
     render() {
         return (
+            this.state.spinner ? <ActivityIndicator size="large" color="#0000ff" /> :
             <View style={{flexDirection: 'column'}}>
                 <View
                     style={{

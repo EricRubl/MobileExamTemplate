@@ -1,6 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, NetInfo, ScrollView, Alert} from 'react-native';
+import {View, NetInfo, ScrollView, Alert, ActivityIndicator} from 'react-native';
 import {Button, ListItem} from "react-native-elements";
 import * as API from '../client/restClient';
 import * as LocalStorage from '../client/localStorage';
@@ -16,6 +16,7 @@ class OwnerLandingPage extends React.Component {
             boats: [],
             updates: [],
             isConnected: true,
+            spinner: false
         };
     }
 
@@ -24,6 +25,8 @@ class OwnerLandingPage extends React.Component {
     }
 
     async update() {
+        this.setState({spinner: true});
+
         try {
             const updates = await LocalStorage.getAllUpdates();
             let boats = await LocalStorage.getAllBoats();
@@ -38,9 +41,9 @@ class OwnerLandingPage extends React.Component {
                     }
                 }
 
-                this.setState({boats: boats, updates: updates});
+                this.setState({boats: boats, updates: updates, spinner: false});
             } else {
-                this.setState({boats: boats, updates: updates});
+                this.setState({boats: boats, updates: updates, spinner: false});
             }
         } catch (err) {
             Alert.alert(
@@ -67,6 +70,8 @@ class OwnerLandingPage extends React.Component {
     handleConnectionChange = async info => {
         console.log("IsConnected to internet la ouner: " + info);
 
+        this.setState({spinner: true});
+
         try {
             const updates = this.state.updates;
             if (info && updates.length > 0) {
@@ -78,9 +83,9 @@ class OwnerLandingPage extends React.Component {
                 }
 
                 await LocalStorage.clearUpdates();
-                this.setState({isConnected: info, updates: []})
+                this.setState({isConnected: info, updates: [], spinner: false})
             } else {
-                this.setState({isConnected: info});
+                this.setState({isConnected: info, spinner: false});
             }
         } catch (err) {
             Alert.alert(
@@ -114,6 +119,8 @@ class OwnerLandingPage extends React.Component {
     }
 
     async retryConnection() {
+        this.setState({spinner: true});
+
         const conn = await NetInfo.isConnected.fetch();
 
         try {
@@ -129,9 +136,9 @@ class OwnerLandingPage extends React.Component {
 
                     }
                     await LocalStorage.clearUpdates();
-                    this.setState({isConnected: true, updates: []})
+                    this.setState({isConnected: true, updates: [], spinner: false})
                 } else {
-                    this.setState({isConnected: true});
+                    this.setState({isConnected: true, spinner: false});
                 }
             }
         } catch (err) {
@@ -149,6 +156,7 @@ class OwnerLandingPage extends React.Component {
 
     render() {
         return (
+            this.state.spinner ? <ActivityIndicator size="large" color="#0000ff" /> :
             <View style={{flexDirection: 'column'}}>
                 <ScrollView style={{height: '40%'}}>
                     {

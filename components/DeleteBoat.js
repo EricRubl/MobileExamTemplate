@@ -1,6 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, ScrollView, Alert} from 'react-native';
+import {View, ScrollView, Alert, ActivityIndicator} from 'react-native';
 import {Button, ListItem, Text} from "react-native-elements";
 import * as API from '../client/restClient';
 
@@ -13,6 +13,7 @@ class DeleteBoat extends React.Component {
         this.state = {
             id: -1,
             boats: [],
+            spinner: false
         };
     }
 
@@ -21,9 +22,11 @@ class DeleteBoat extends React.Component {
     }
 
     async update() {
+        this.setState({spinner: true});
+
         try {
             const boats = await API.getAllBoats();
-            this.setState({boats: boats});
+            this.setState({boats: boats, spinner: false});
         } catch (err) {
             Alert.alert(
                 'Server error',
@@ -37,6 +40,8 @@ class DeleteBoat extends React.Component {
     }
 
     async deleteBoat() {
+        this.setState({spinner: true});
+
         try {
             await API.deleteBoat(this.state.id);
         } catch (err) {
@@ -50,10 +55,12 @@ class DeleteBoat extends React.Component {
             );
         }
 
-        await this.update();
-
         const reload = this.props.navigation.getParam('refresh');
         reload();
+
+        this.setState({spinner: false});
+
+        await this.update();
     }
 
     updateForm(event, boat) {
@@ -62,6 +69,7 @@ class DeleteBoat extends React.Component {
 
     render() {
         return (
+            this.state.spinner ? <ActivityIndicator size="large" color="#0000ff" /> :
             <View style={{flexDirection: 'column'}}>
                 <ScrollView style={{height: '40%'}}>
                     {

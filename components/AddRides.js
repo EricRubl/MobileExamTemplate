@@ -1,6 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, NetInfo, ScrollView, TextInput, Alert} from 'react-native';
+import {View, NetInfo, ScrollView, TextInput, Alert, ActivityIndicator} from 'react-native';
 import {Button, ListItem, Text} from "react-native-elements";
 import * as API from '../client/restClient';
 import * as LocalStorage from '../client/localStorage';
@@ -16,7 +16,8 @@ class AddRides extends React.Component {
             isConnected: true,
             selectedID: -1,
             rides: 0,
-            increment: '0'
+            increment: '0',
+            spinner: false
         };
     }
 
@@ -29,6 +30,8 @@ class AddRides extends React.Component {
 
         let boats;
 
+        this.setState({spinner: true});
+
         try {
             if (conn) {
                 boats = await API.getAllBoats();
@@ -36,7 +39,7 @@ class AddRides extends React.Component {
                 boats = await LocalStorage.getAllBoats();
             }
 
-            this.setState({boats: boats, isConnected: conn});
+            this.setState({boats: boats, isConnected: conn, spinner: false});
         } catch (err) {
             Alert.alert(
                 'Server error',
@@ -65,6 +68,8 @@ class AddRides extends React.Component {
     };
 
     async addRides() {
+        this.setState({spinner: true});
+
         const rides = parseInt(this.state.increment);
 
         await LocalStorage.addRides(this.state.selectedID, rides + this.state.rides);
@@ -89,6 +94,8 @@ class AddRides extends React.Component {
         const reload = this.props.navigation.getParam('refresh');
         reload();
 
+        this.setState({spinner: false});
+
         await this.update();
     }
 
@@ -99,6 +106,7 @@ class AddRides extends React.Component {
 
     render() {
         return (
+            this.state.spinner? <ActivityIndicator size="large" color="#0000ff" /> :
             <View style={{flexDirection: 'column'}}>
                 <ScrollView style={{height: '40%'}}>
                     {
