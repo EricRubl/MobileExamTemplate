@@ -13,7 +13,16 @@ class EmployeeLandingPage extends React.Component {
 
         this.state = {
             boats: [],
+            wsboats: [],
             spinner: false
+        };
+
+        this.ws = new WebSocket('ws://localhost:4022');
+
+        this.ws.onmessage = (event) => {
+            let wsboats = this.state.wsboats;
+            const boat = JSON.parse(event.data);
+            this.setState({wsboats: [...wsboats, boat]});
         };
     }
 
@@ -47,11 +56,15 @@ class EmployeeLandingPage extends React.Component {
         this.props.navigation.navigate('DeleteBoat', {refresh: () => this.update()});
     }
 
+    clearWebSocketData() {
+        this.setState({wsboats: []});
+    }
+
     render() {
         return (
             this.state.spinner ? <ActivityIndicator size="large" color="#0000ff" /> :
             <View style={{flexDirection: 'column'}}>
-                <ScrollView style={{height: '80%'}}>
+                <ScrollView style={{height: '40%'}}>
                     {
                         this.state.boats.filter(boat => boat.status === 'busy').sort((a, b) =>{
                             if(a.rides === b.rides) {
@@ -71,7 +84,19 @@ class EmployeeLandingPage extends React.Component {
                 <View style={{height: '20%'}}>
                     <Button onPress={this.addBoat} title={'Add boat'}/>
                     <Button onPress={this.deleteBoat} title={'Delete boat'}/>
+                    <Button onPress={this.clearWebSocketData} title={'Clear WebSocket Data'}/>
                 </View>
+                <ScrollView style={{height: '40%'}}>
+                    {
+                        this.state.wsboats.map((boat) => (
+                            <ListItem
+                                key={boat.id}
+                                title={`${boat.id} | ${boat.name} | ${boat.model}`}
+                                subtitle={`Seats: ${boat.seats} Rides: ${boat.rides}`}>
+                            </ListItem>
+                        ))
+                    }
+                </ScrollView>
             </View>
 
         );
