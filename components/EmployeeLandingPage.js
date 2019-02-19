@@ -17,7 +17,7 @@ class EmployeeLandingPage extends React.Component {
             spinner: false
         };
 
-        this.ws = new WebSocket('ws://localhost:4022');
+        this.ws = new WebSocket('ws://' + API.IP + ':' + API.PORT);
 
         this.ws.onmessage = (event) => {
             let wsboats = this.state.wsboats;

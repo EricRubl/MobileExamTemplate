@@ -1,5 +1,5 @@
-const IP = '127.0.0.1';
-const PORT = '4022';
+export const IP = '192.168.0.105';  // change this according to your needs
+export const PORT = '4022';  // and this
 const URL = 'http://' + IP + ":" + PORT;
 
 function createRequestWithTimeout(ms, promise, message) {
