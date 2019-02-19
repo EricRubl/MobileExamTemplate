@@ -1,3 +1,4 @@
+import React from 'react';
 import {ListItem} from "react-native-elements";
 
 class Entity {
@@ -12,7 +13,7 @@ class Entity {
         // string - model of the entity
         this.model = model;
         // boolean - status of the entity
-        this.status = status === Entity.statusFreeString ? true : false;
+        this.status = status === Entity.statusFreeString;
         // number - number of times the entity was used
         this.rides = rides;
     }
@@ -30,7 +31,7 @@ class Entity {
     }
 
     statusToString() {
-        return this.status ? statusFreeString : statusBusyString;
+        return this.status ? Entity.statusFreeString : Entity.statusBusyString;
     }
 
     static fromObject() {

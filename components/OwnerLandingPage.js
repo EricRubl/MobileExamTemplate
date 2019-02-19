@@ -29,15 +29,15 @@ class OwnerLandingPage extends React.Component {
 
         try {
             const updates = await LocalStorage.getAllUpdates();
-            let boats = await LocalStorage.getAllBoats();
+            let boats = await LocalStorage.getAllEntities();
             const localSize = boats.length;
 
             if (this.state.isConnected) {
-                boats = await API.getAllBoats();
+                boats = await API.getAllEntities();
 
                 if(localSize === 0) {
                     for(let i = 0; i < boats.length; ++i) {
-                        await LocalStorage.addBoat(boats[i]);
+                        await LocalStorage.addEntity(boats[i]);
                     }
                 }
 
@@ -77,7 +77,7 @@ class OwnerLandingPage extends React.Component {
             if (info && updates.length > 0) {
                 for(let i = 0; i < updates.length; ++i) {
                     if (updates[i].category === 'change') {
-                        await API.changeBoat(updates[i].id, updates[i].name, updates[i].status, updates[i].seats);
+                        await API.changeEntity(updates[i].id, updates[i].name, updates[i].status, updates[i].seats);
                     }
 
                 }
@@ -129,9 +129,9 @@ class OwnerLandingPage extends React.Component {
                 if (updates.length > 0) {
                     for(let i = 0; i < updates.length; ++i) {
                         if (updates[i].category === 'change') {
-                            await API.changeBoat(updates[i].id, updates[i].name, updates[i].status, updates[i].seats);
+                            await API.changeEntity(updates[i].id, updates[i].name, updates[i].status, updates[i].seats);
                         } else {
-                            await API.addRides(updates[i].id, updates[i].rides);
+                            await API.incrementNumberProp(updates[i].id, updates[i].rides);
                         }
 
                     }
