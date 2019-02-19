@@ -13,12 +13,25 @@ class Entity {
         this.model = model;
         // boolean - status of the entity
         this.status = status === Entity.statusFreeString ? true : false;
+        // number - number seats
+        this.seats = seats;
         // number - number of times the entity was used
         this.rides = rides;
     }
 
     isAvailable() {
         return this.status;
+    }
+
+    /**
+     * @param  {Entity} updater Entity object to update
+     */
+    update(updater) {
+        this.name = updater.name;
+        this.model = updater.model;
+        this.status = updater.status;
+        this.seats = updater.seats;
+        this.rides = updater.rides;
     }
 
     toListItem() {
