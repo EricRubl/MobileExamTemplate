@@ -3,6 +3,7 @@ import autoBind from 'react-autobind';
 import {View, ScrollView, Alert, ActivityIndicator} from 'react-native';
 import {Button, ListItem} from "react-native-elements";
 import * as API from '../client/restClient';
+import Entity from "./Entity";
 
 class EmployeeLandingPage extends React.Component {
 
@@ -12,17 +13,17 @@ class EmployeeLandingPage extends React.Component {
         autoBind(this);
 
         this.state = {
-            boats: [],
-            wsboats: [],
+            entities: [],
+            wsEntities: [],
             spinner: false
         };
 
         this.ws = new WebSocket('ws://' + API.IP + ':' + API.PORT);
 
         this.ws.onmessage = (event) => {
-            let wsboats = this.state.wsboats;
-            const boat = JSON.parse(event.data);
-            this.setState({wsboats: [...wsboats, boat]});
+            let wsEntities = this.state.wsEntities;
+            const entity = Entity.fromObject(JSON.parse(event.data));
+            this.setState({wsEntities: [...wsEntities, entity]});
         };
     }
 
@@ -34,8 +35,8 @@ class EmployeeLandingPage extends React.Component {
         this.setState({spinner: true});
 
         try {
-            const boats = await API.getAllEntities();
-            this.setState({boats: boats, spinner: false});
+            const entities = await API.getAllEntities();
+            this.setState({entities: entities, spinner: false});
         } catch (err) {
             Alert.alert(
                 'Server error',
@@ -48,12 +49,12 @@ class EmployeeLandingPage extends React.Component {
         }
     }
 
-    addBoat() {
-        this.props.navigation.navigate('AddBoat', {refresh: () => this.update()});
+    addEntity() {
+        this.props.navigation.navigate('AddEntity', {refresh: () => this.update()});
     }
 
-    deleteBoat() {
-        this.props.navigation.navigate('DeleteBoat', {refresh: () => this.update()});
+    deleteEntity() {
+        this.props.navigation.navigate('DeleteEntity', {refresh: () => this.update()});
     }
 
     clearWebSocketData() {
@@ -66,35 +67,23 @@ class EmployeeLandingPage extends React.Component {
             <View style={{flexDirection: 'column'}}>
                 <ScrollView style={{height: '40%'}}>
                     {
-                        this.state.boats.filter(boat => boat.status === 'busy').sort((a, b) =>{
+                        this.state.entities.filter(entity => !entity.isAvailable()).sort((a, b) =>{
                             if(a.rides === b.rides) {
                                 return (a.seats < b.seats) ? 1 : (a.seats > b.seats) ? -1 : 0;
                             } else {
                                 return a.rides < b.rides ? 1 : -1;
                             }
-                        }).map((boat) => (
-                            <ListItem
-                                key={boat.id}
-                                title={`${boat.id} | ${boat.name} | ${boat.model}`}
-                                subtitle={`Seats: ${boat.seats} Rides: ${boat.rides}`}>
-                            </ListItem>
-                        ))
+                        }).map(entity => entity.toListItem())
                     }
                 </ScrollView>
                 <View style={{height: '20%'}}>
-                    <Button onPress={this.addBoat} title={'Add boat'}/>
-                    <Button onPress={this.deleteBoat} title={'Delete boat'}/>
+                    <Button onPress={this.addEntity} title={'Add boat'}/>
+                    <Button onPress={this.deleteEntity} title={'Delete boat'}/>
                     <Button onPress={this.clearWebSocketData} title={'Clear WebSocket Data'}/>
                 </View>
                 <ScrollView style={{height: '40%'}}>
                     {
-                        this.state.wsboats.map((boat) => (
-                            <ListItem
-                                key={boat.id}
-                                title={`${boat.id} | ${boat.name} | ${boat.model}`}
-                                subtitle={`Seats: ${boat.seats} Rides: ${boat.rides}`}>
-                            </ListItem>
-                        ))
+                        this.state.wsEntities.map(entity => entity.toListItem())
                     }
                 </ScrollView>
             </View>

@@ -1,23 +1,20 @@
 import React from 'react';
 import autoBind from 'react-autobind';
 import {View, Switch, NetInfo, ScrollView, TextInput, Alert, ActivityIndicator} from 'react-native';
-import {Button, ListItem, Text} from "react-native-elements";
+import {Button} from "react-native-elements";
 import * as API from '../client/restClient';
 import * as LocalStorage from '../client/localStorage';
 
-class ChangeBoatDetails extends React.Component {
+class ChangeEntityDetails extends React.Component {
 
     constructor(props) {
         super(props);
         autoBind(this);
 
         this.state = {
-            boats: [],
+            entities: [],
+            selectedEntity: null,
             isConnected: true,
-            selectedID: -1,
-            name: '',
-            free: true,
-            seats: '0',
             spinner: false
         };
     }
@@ -31,16 +28,16 @@ class ChangeBoatDetails extends React.Component {
 
         const conn = await NetInfo.isConnected.fetch();
 
-        let boats;
+        let entities;
 
         try {
             if (conn) {
-                boats = await API.getAllEntities();
+                entities = await API.getAllEntities();
             } else {
-                boats = await LocalStorage.getAllEntities();
+                entities = await LocalStorage.getAllEntities();
             }
 
-            this.setState({boats: boats, isConnected: conn, spinner: false});
+            this.setState({entities: entities, isConnected: conn, spinner: false});
         } catch (err) {
             Alert.alert(
                 'Server error',
@@ -71,15 +68,13 @@ class ChangeBoatDetails extends React.Component {
     async changeDetails() {
         this.setState({spinner: true});
 
-        const status = this.state.free ? 'free' :  'busy';
-
-        await LocalStorage.changeEntity(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
+        await LocalStorage.changeEntity(this.state.selectedEntity);
 
         try {
             if(this.state.isConnected) {
-                await API.changeEntity(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
+                await API.changeEntity(this.state.selectedEntity);
             } else {
-                await LocalStorage.addUpdate({category: 'change', id: this.state.selectedID, name: this.state.name, status: status, seats: parseInt(this.state.seats)});
+                await LocalStorage.addUpdate({category: 'change', entity: this.state.selectedEntity.toDict()});
             }
         } catch (err) {
             Alert.alert(
@@ -101,27 +96,19 @@ class ChangeBoatDetails extends React.Component {
         await this.update();
     }
 
-    updateForm(event, boat) {
-        console.log(boat.status === 'free');
-        this.setState({selectedID: boat.id, name: boat.name, free: boat.status === 'free', seats: boat.seats})
+    updateForm(entity) {
+        this.setState({selectedEntity: entity});
     }
 
 
     render() {
+        console.log('rendered');
         return (
             this.state.spinner ? <ActivityIndicator size="large" color="#0000ff" /> :
             <View style={{flexDirection: 'column'}}>
                 <ScrollView style={{height: '40%'}}>
                     {
-                        this.state.boats.map((boat) => (
-                            <ListItem
-                                key={boat.id}
-                                title={`${boat.id} | ${boat.name} | ${boat.model}`}
-                                subtitle={`Seats: ${boat.seats} Rides: ${boat.rides} Status: ${boat.status}`}
-                                onPress={e => this.updateForm(e, boat)}
-                            >
-                            </ListItem>
-                        ))
+                        this.state.entities.map(entity => entity.toListItem(this.updateForm))
                     }
                 </ScrollView>
                 <View
@@ -133,13 +120,13 @@ class ChangeBoatDetails extends React.Component {
                 >
                     <TextInput
                         style={{height: 40, width: 100, margin: 10, borderColor: 'gray', borderWidth: 1}}
-                        onChangeText={(text) => this.setState({name: text})}
-                        value={this.state.name}
+                        onChangeText={(text) => this.setState({selectedEntity: this.state.selectedEntity.setName(text)})}
+                        value={this.state.selectedEntity ? this.state.selectedEntity.name : ''}
                     />
                     <TextInput
                         style={{height: 40, width: 100, margin: 10, borderColor: 'gray', borderWidth: 1}}
-                        onChangeText={(text) => this.setState({seats: text})}
-                        value={this.state.seats.toString()}
+                        onChangeText={(text) => this.setState({selectedEntity: this.state.selectedEntity.setSeats(parseInt(text))})}
+                        value={this.state.selectedEntity ? this.state.selectedEntity.seats.toString() : ''}
                     />
                 </View>
                 <View
@@ -149,8 +136,7 @@ class ChangeBoatDetails extends React.Component {
                         justifyContent: 'center',
                     }}
                 >
-                    <Text>{this.state.isConnected ? 'yeee' : 'nuuu'}</Text>
-                    <Switch value={this.state.free} onValueChange={value => this.setState({free: value})}/>
+                    <Switch value={this.state.selectedEntity ? this.state.selectedEntity.status : false} onValueChange={value => this.setState({selectedEntity: this.state.selectedEntity.setStatus(value)})}/>
                 </View>
                 <Button title={'Change details'} onPress={this.changeDetails}/>
             </View>
@@ -159,4 +145,4 @@ class ChangeBoatDetails extends React.Component {
     }
 }
 
-export default ChangeBoatDetails;
+export default ChangeEntityDetails;

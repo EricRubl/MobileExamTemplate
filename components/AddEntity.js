@@ -3,26 +3,25 @@ import autoBind from 'react-autobind';
 import {View, Picker, TextInput, Alert, ActivityIndicator, Text} from 'react-native';
 import {Button} from "react-native-elements";
 import * as API from '../client/restClient';
+import Entity from "./Entity";
 
-class AddBoat extends React.Component {
+class AddEntity extends React.Component {
 
     constructor(props) {
         super(props);
         autoBind(this);
 
         this.state = {
-            name: '',
-            model: 'Serenity',
-            seats: '0',
+            entity: new Entity(-1, '', 'Serenity', 'free', 0, 0),
             spinner: false
         };
     }
 
-    async addBoat() {
+    async addEntity() {
         this.setState({spinner: true});
 
         try {
-            await API.addEntity(this.state.name, this.state.model, parseInt(this.state.seats));
+            await API.addEntity(this.state.entity);
         } catch (err) {
             Alert.alert(
                 'Server error',
@@ -54,31 +53,31 @@ class AddBoat extends React.Component {
                     <Text>Boat's name</Text>
                     <TextInput
                         style={{height: 40, width: 100, margin: 10, borderColor: 'gray', borderWidth: 1}}
-                        onChangeText={(text) => this.setState({name: text})}
-                        value={this.state.name}
+                        onChangeText={(text) => this.setState({entity: this.state.entity.setName(text)})}
+                        value={this.state.entity ? this.state.entity.name : ''}
                     />
                     <Text>Seats</Text>
                     <TextInput
                         style={{height: 40, width: 100, margin: 10, borderColor: 'gray', borderWidth: 1}}
-                        onChangeText={(text) => this.setState({seats: text})}
-                        value={this.state.seats.toString()}
+                        onChangeText={(text) => this.setState({entity: this.state.entity.setSeats(parseInt(text))})}
+                        value={this.state.entity ? this.state.entity.seats.toString() : ''}
                     />
                 </View>
                 <Picker
-                    selectedValue={this.state.model}
+                    selectedValue={this.state.entity ? this.state.entity.model : 'Serenity'}
                     style={{height: 50, width: 150}}
-                    onValueChange={(itemValue, itemIndex) =>
-                        this.setState({model: itemValue})
+                    onValueChange={(itemValue) =>
+                        this.setState({entity: this.state.entity.setModel(itemValue)})
                     }>
                     <Picker.Item label="Serenity" value="Serenity" />
                     <Picker.Item label="Whisper" value="Whisper" />
                     <Picker.Item label="Orion" value="Orion" />
                 </Picker>
-                <Button title={'Add boat'} onPress={this.addBoat}/>
+                <Button title={'Add boat'} onPress={this.addEntity}/>
             </View>
 
         );
     }
 }
 
-export default AddBoat;
+export default AddEntity;

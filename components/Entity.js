@@ -20,7 +20,7 @@ class Entity {
         this.rides = rides;
     }
 
-    static isAvailable() {
+    isAvailable() {
         return this.status;
     }
 
@@ -41,7 +41,11 @@ class Entity {
     }
 
     static getAddEntityURL() {
-        return '/add';
+        return '/new';
+    }
+
+    static getDeleteEntityURL() {
+        return '/boat/';
     }
 
 
@@ -56,15 +60,61 @@ class Entity {
         this.rides = updater.rides;
     }
 
-    incrementNumberProp() {
+    getChangeBody() {
+        return {
+            id: this.id,
+            name: this.name,
+            seats: this.seats,
+            status: this.statusToString(),
+        }
+    }
+
+    getAddBody() {
+        return {
+            name: this.name,
+            model: this.model,
+            seats: this.seats,
+        }
+    }
+
+    incrementNumberProp(increment) {
+        this.rides += increment;
 
     }
 
-    toListItem() {
+    setName(newName) {
+        this.name = newName;
+
+        return this;
+    }
+
+    setSeats(newSeats) {
+        this.seats = newSeats;
+
+        return this;
+    }
+
+    setStatus(newStatus) {
+        this.status = newStatus;
+
+        return this;
+    }
+
+    setModel(newModel) {
+        this.model = newModel;
+
+        return this;
+    }
+
+    toListItem(callback) {
         return <ListItem
             key={this.id}
             title={`${this.id} | ${this.name} | ${this.model}`}
-            subtitle={`Seats: ${this.seats} Rides: ${this.rides}`}>
+            subtitle={`Seats: ${this.seats} Rides: ${this.rides}`}
+            onPress={() => {
+                if (callback)
+                    callback(this);
+            }}>
         </ListItem>;
     }
 
@@ -82,6 +132,21 @@ class Entity {
             model: this.model,
             seats: this.seats,
         });
+    }
+
+    toDict() {
+        return {
+            id: this.id,
+            name: this.name,
+            status: this.statusToString(),
+            model: this.model,
+            rides: this.rides,
+            seats: this.seats,
+        }
+    }
+
+    getNumberProp() {
+        return this.rides;
     }
 }
 

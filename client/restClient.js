@@ -1,3 +1,5 @@
+import Entity from "../components/Entity";
+
 export const IP = '127.0.0.1';  // change this according to your needs
 export const PORT = '4022';  // and this
 const URL = 'http://' + IP + ":" + PORT;
@@ -13,20 +15,20 @@ function createRequestWithTimeout(ms, promise, message) {
 
 export async function getFreeEntities() {
     try {
-        console.log("GET /boats. Getting free boats from server.");
-        const boats = await createRequestWithTimeout(1000, fetch(URL + '/boats'), "Cannot access server");
-        return JSON.parse(boats._bodyText)
+        console.log('GET ' + Entity.getFreeEntitiesURL());
+        const entities = await createRequestWithTimeout(1000, fetch(URL + Entity.getFreeEntitiesURL()), "Cannot access server");
+        return JSON.parse(entities._bodyText).map(dict => Entity.fromObject(dict));
     } catch (err) {
-        console.log("Error while getting free boats from server");
+        console.log("Error while getting entities from server", err);
         throw Error();
     }
 }
 
 export async function getBusyEntities() {
     try {
-        console.log("GET /busy. Getting busy boats from server.");
-        const boats = await createRequestWithTimeout(1000, fetch(URL + '/busy'), "Cannot access server");
-        return JSON.parse(boats._bodyText)
+        console.log('GET ' + Entity.getBusyEntitiesURL());
+        const entities = await createRequestWithTimeout(1000, fetch(URL + Entity.getBusyEntitiesURL()), "Cannot access server");
+        return JSON.parse(entities._bodyText).map(dict => Entity.fromObject(dict));
     } catch (err) {
         console.log("Error while getting busy boats from server");
         throw Error();
@@ -34,47 +36,42 @@ export async function getBusyEntities() {
 }
 
 export async function getAllEntities() {
-    let boats = [];
+    let entities = [];
 
     try {
-        await getFreeEntities().then(free => boats = boats.concat(free));
-        await getBusyEntities().then(busy => boats = boats.concat(busy));
+        await getFreeEntities().then(free => entities = [...entities, ...free]);
+        await getBusyEntities().then(busy => entities = [...entities, ...busy]);
     } catch (err) {
         throw Error('Cannot get boats from the server 😥');
     }
 
-
-    return boats;
+    return entities;
 }
 
-export async function changeEntity(id, name, status, seats) {
+export async function changeEntity(entity) {
     try {
-        console.log("POST /change. Changing boat details.");
-        let request = fetch(URL + '/change', {
+        console.log('POST ' + Entity.getChangeEntityURL());
+
+        let request = fetch(URL + Entity.getChangeEntityURL(), {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                id: id,
-                name: name,
-                status: status,
-                seats: seats,
-            })
+            body: JSON.stringify(entity.getChangeBody())
         });
-        const response = await createRequestWithTimeout(1000, request, "Cannot access server");
-        return JSON.parse(response._bodyText).success;
+
+        await createRequestWithTimeout(1000, request, "Cannot access server");
     } catch (error) {
-        console.log("Error changing boat: ", error);
-        throw Error('Cannot change boat on the server 😥');
+        console.log("Error changing entity: ", error);
+        throw Error('Cannot change entity on the server 😥');
     }
 }
 
 export async function incrementNumberProp(id, rides) {
     try {
-        console.log("POST /rides. Changing boat details.");
-        let request = fetch(URL + '/rides', {
+        console.log('POST ' + Entity.getIncrementRidesURL());
+        let request = fetch(URL + Entity.getIncrementRidesURL(), {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -93,23 +90,20 @@ export async function incrementNumberProp(id, rides) {
     }
 }
 
-export async function addEntity(name, model, seats) {
+export async function addEntity(incompleteEntity) {
     try {
-        console.log("POST /new. Adding boat.");
-        let request = fetch(URL + '/new', {
+        console.log('POST ' + Entity.getAddEntityURL());
+        let request = fetch(URL + Entity.getAddEntityURL(), {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                name: name,
-                model: model,
-                seats: seats,
-            })
+            body: JSON.stringify(incompleteEntity.getAddBody())
         });
-        const response = await createRequestWithTimeout(1000, request, "Cannot access server");
-        return JSON.parse(response._bodyText).success;
+
+        await createRequestWithTimeout(1000, request, "Cannot access server");
+
     } catch (error) {
         console.log("Error adding boat: ", error);
         throw Error('Cannot add boat on the server 😥');
@@ -118,18 +112,19 @@ export async function addEntity(name, model, seats) {
 
 export async function deleteEntity(id) {
     try {
-        console.log("DELETE /boat. Deleting boat.");
-        let request = fetch(URL + '/boat/' + id.toString(), {
+        console.log('DELETE ' + Entity.getDeleteEntityURL());
+        let request = fetch(URL + Entity.getDeleteEntityURL() + id.toString(), {
             method: 'DELETE',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
         });
-        const response = await createRequestWithTimeout(1000, request, "Cannot access server");
-        return JSON.parse(response._bodyText).success;
+
+        await createRequestWithTimeout(1000, request, "Cannot access server");
+
     } catch (error) {
-        console.log("Error deleting boat: ", error);
-        throw Error('Cannot delete boat from the server 😥');
+        console.log("Error deleting entity: ", error);
+        throw Error('Cannot delete entity from the server 😥');
     }
 }

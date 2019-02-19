@@ -4,7 +4,7 @@ import {View, ScrollView, Alert, ActivityIndicator} from 'react-native';
 import {Button, ListItem, Text} from "react-native-elements";
 import * as API from '../client/restClient';
 
-class DeleteBoat extends React.Component {
+class DeleteEntity extends React.Component {
 
     constructor(props) {
         super(props);
@@ -12,7 +12,7 @@ class DeleteBoat extends React.Component {
 
         this.state = {
             id: -1,
-            boats: [],
+            entities: [],
             spinner: false
         };
     }
@@ -25,8 +25,9 @@ class DeleteBoat extends React.Component {
         this.setState({spinner: true});
 
         try {
-            const boats = await API.getAllEntities();
-            this.setState({boats: boats, spinner: false});
+            const entities = await API.getAllEntities();
+
+            this.setState({entities: entities, spinner: false});
         } catch (err) {
             Alert.alert(
                 'Server error',
@@ -39,7 +40,7 @@ class DeleteBoat extends React.Component {
         }
     }
 
-    async deleteBoat() {
+    async deleteEntity() {
         this.setState({spinner: true});
 
         try {
@@ -63,8 +64,8 @@ class DeleteBoat extends React.Component {
         await this.update();
     }
 
-    updateForm(event, boat) {
-        this.setState({id: boat.id});
+    updateForm(entity) {
+        this.setState({id: entity.id});
     }
 
     render() {
@@ -73,23 +74,15 @@ class DeleteBoat extends React.Component {
             <View style={{flexDirection: 'column'}}>
                 <ScrollView style={{height: '40%'}}>
                     {
-                        this.state.boats.map((boat) => (
-                            <ListItem
-                                key={boat.id}
-                                title={`${boat.id} | ${boat.name} | ${boat.model}`}
-                                subtitle={`Seats: ${boat.seats} Rides: ${boat.rides} Status: ${boat.status}`}
-                                onPress={e => this.updateForm(e, boat)}
-                            >
-                            </ListItem>
-                        ))
+                        this.state.entities.map(entity => entity.toListItem(this.updateForm))
                     }
                 </ScrollView>
                 <Text>{`Boat to delete: ${this.state.id}`}</Text>
-                <Button title={'Delete boat'} onPress={this.deleteBoat}/>
+                <Button title={'Delete boat'} onPress={this.deleteEntity}/>
             </View>
 
         );
     }
 }
 
-export default DeleteBoat;
+export default DeleteEntity;

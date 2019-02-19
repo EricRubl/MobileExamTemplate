@@ -1,4 +1,5 @@
 import {AsyncStorage} from "react-native";
+import Entity from "../components/Entity";
 
 export async function clearStorage() {
     await AsyncStorage.clear();
@@ -13,12 +14,10 @@ export async function addEntity(entity) {
         } else
             entities = JSON.parse(entities);
 
-        await AsyncStorage.setItem('ENTITIES', JSON.stringify([...entities, entity]));
+        await AsyncStorage.setItem('ENTITIES', JSON.stringify([...entities, entity.toDict()]));
 
-        return true;
     } catch (error) {
         console.log("Error adding entity to async storage: ", error);
-        return false;
     }
 }
 
@@ -28,7 +27,9 @@ export async function changeEntity(entity) {
 
         entities = JSON.parse(entities);
 
-        entities.filter(e => e.id === entity.id).map(e => e.update(entity));
+        const index = entities.findIndex(e => e.id === entity.id);
+
+        entities[index] = entity.toDict();
 
         await AsyncStorage.setItem('ENTITIES', JSON.stringify([...entities]));
 
@@ -43,9 +44,15 @@ export async function incrementNumberProp(id, increment) {
 
         entities = JSON.parse(entities);
 
-        entities.filter(e => e.id === id).map(e => e.incrementNumberProp(increment));
+        const index = entities.findIndex(e => e.id === id);
 
-        await AsyncStorage.setItem('BOATS', JSON.stringify([...entities]));
+        let updated = Entity.fromObject(entities[index]);
+
+        updated.incrementNumberProp(increment);
+
+        entities[index] = updated.toDict();
+
+        await AsyncStorage.setItem('ENTITIES', JSON.stringify([...entities]));
 
     } catch (error) {
         console.log("Error adding fulfilled request to async storage: ", error);
@@ -54,10 +61,10 @@ export async function incrementNumberProp(id, increment) {
 
 export async function getAllEntities() {
     try {
-        const entities = await AsyncStorage.getItem('BOATS');
+        const entities = await AsyncStorage.getItem('ENTITIES');
 
         if (entities !== null) {
-            return JSON.parse(entities);
+            return JSON.parse(entities).map(entity => Entity.fromObject(entity));
         } else
             return [];
     } catch (error) {

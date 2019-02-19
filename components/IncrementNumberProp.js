@@ -1,21 +1,21 @@
 import React from 'react';
 import autoBind from 'react-autobind';
 import {View, NetInfo, ScrollView, TextInput, Alert, ActivityIndicator} from 'react-native';
-import {Button, ListItem, Text} from "react-native-elements";
+import {Button, Text} from "react-native-elements";
 import * as API from '../client/restClient';
 import * as LocalStorage from '../client/localStorage';
 
-class AddRides extends React.Component {
+class IncrementNumberProp extends React.Component {
 
     constructor(props) {
         super(props);
         autoBind(this);
 
         this.state = {
-            boats: [],
+            entities: [],
             isConnected: true,
             selectedID: -1,
-            rides: 0,
+            current: 0,
             increment: '0',
             spinner: false
         };
@@ -28,18 +28,18 @@ class AddRides extends React.Component {
     async update() {
         const conn = await NetInfo.isConnected.fetch();
 
-        let boats;
+        let entities;
 
         this.setState({spinner: true});
 
         try {
             if (conn) {
-                boats = await API.getAllEntities();
+                entities = await API.getAllEntities();
             } else {
-                boats = await LocalStorage.getAllEntities();
+                entities = await LocalStorage.getAllEntities();
             }
 
-            this.setState({boats: boats, isConnected: conn, spinner: false});
+            this.setState({entities: entities, isConnected: conn, spinner: false});
         } catch (err) {
             Alert.alert(
                 'Server error',
@@ -67,18 +67,18 @@ class AddRides extends React.Component {
         console.log("IsConnected to internet: " + info);
     };
 
-    async addRides() {
+    async incrementProp() {
         this.setState({spinner: true});
 
-        const rides = parseInt(this.state.increment);
+        const increment = parseInt(this.state.increment);
 
-        await LocalStorage.incrementNumberProp(this.state.selectedID, rides + this.state.rides);
+        await LocalStorage.incrementNumberProp(this.state.selectedID, increment);
 
         try {
             if(this.state.isConnected) {
-                await API.incrementNumberProp(this.state.selectedID, rides);
+                await API.incrementNumberProp(this.state.selectedID, increment);
             } else {
-                await LocalStorage.addUpdate({category: 'rides', id: this.state.selectedID, rides: rides});
+                await LocalStorage.addUpdate({category: 'increment', id: this.state.selectedID, increment: increment});
             }
         } catch (err) {
             Alert.alert(
@@ -99,8 +99,8 @@ class AddRides extends React.Component {
         await this.update();
     }
 
-    updateForm(event, boat) {
-        this.setState({selectedID: boat.id, rides: boat.rides});
+    updateForm(entity) {
+        this.setState({selectedID: entity.id, current: entity.getNumberProp()});
     }
 
 
@@ -110,15 +110,7 @@ class AddRides extends React.Component {
             <View style={{flexDirection: 'column'}}>
                 <ScrollView style={{height: '40%'}}>
                     {
-                        this.state.boats.map((boat) => (
-                            <ListItem
-                                key={boat.id}
-                                title={`${boat.id} | ${boat.name} | ${boat.model}`}
-                                subtitle={`Seats: ${boat.seats} Rides: ${boat.rides} Status: ${boat.status}`}
-                                onPress={e => this.updateForm(e, boat)}
-                            >
-                            </ListItem>
-                        ))
+                        this.state.entities.map(entity => entity.toListItem(this.updateForm))
                     }
                 </ScrollView>
                 <TextInput
@@ -126,12 +118,12 @@ class AddRides extends React.Component {
                     onChangeText={(text) => this.setState({increment: text})}
                     value={this.state.increment}
                 />
-                <Text>{`Current rides: ${this.state.rides}`}</Text>
-                <Button title={'Add rides'} onPress={this.addRides}/>
+                <Text>{`Current value: ${this.state.current}`}</Text>
+                <Button title={'Add rides'} onPress={this.incrementProp}/>
             </View>
 
         );
     }
 }
 
-export default AddRides;
+export default IncrementNumberProp;
