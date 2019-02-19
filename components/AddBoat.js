@@ -1,6 +1,6 @@
 import React from 'react';
 import autoBind from 'react-autobind';
-import {View, Picker, TextInput, Alert, ActivityIndicator} from 'react-native';
+import {View, Picker, TextInput, Alert, ActivityIndicator, Text} from 'react-native';
 import {Button} from "react-native-elements";
 import * as API from '../client/restClient';
 
@@ -51,11 +51,13 @@ class AddBoat extends React.Component {
                         justifyContent: 'center',
                     }}
                 >
+                    <Text>Boat's name</Text>
                     <TextInput
                         style={{height: 40, width: 100, margin: 10, borderColor: 'gray', borderWidth: 1}}
                         onChangeText={(text) => this.setState({name: text})}
                         value={this.state.name}
                     />
+                    <Text>Seats</Text>
                     <TextInput
                         style={{height: 40, width: 100, margin: 10, borderColor: 'gray', borderWidth: 1}}
                         onChangeText={(text) => this.setState({seats: text})}
@@ -64,7 +66,7 @@ class AddBoat extends React.Component {
                 </View>
                 <Picker
                     selectedValue={this.state.model}
-                    style={{height: 50, width: 100}}
+                    style={{height: 50, width: 150}}
                     onValueChange={(itemValue, itemIndex) =>
                         this.setState({model: itemValue})
                     }>
