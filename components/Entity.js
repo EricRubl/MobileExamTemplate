@@ -24,6 +24,27 @@ class Entity {
         return this.status;
     }
 
+    getFreeEntitiesURL() {
+        return '/boats';
+    }
+
+    getBusyEntitiesURL() {
+        return '/busy';
+    }
+
+    getChangeEntityURL() {
+        return '/change';
+    }
+
+    getIncrementRidesURL() {
+        return '/rides';
+    }
+
+    getAddEntityURL() {
+        return '/add';
+    }
+
+
     /**
      * @param  {Entity} updater Entity object to update
      */
