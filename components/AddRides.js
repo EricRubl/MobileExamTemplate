@@ -34,9 +34,9 @@ class AddRides extends React.Component {
 
         try {
             if (conn) {
-                boats = await API.getAllBoats();
+                boats = await API.getAllEntities();
             } else {
-                boats = await LocalStorage.getAllBoats();
+                boats = await LocalStorage.getAllEntities();
             }
 
             this.setState({boats: boats, isConnected: conn, spinner: false});
@@ -72,11 +72,11 @@ class AddRides extends React.Component {
 
         const rides = parseInt(this.state.increment);
 
-        await LocalStorage.addRides(this.state.selectedID, rides + this.state.rides);
+        await LocalStorage.incrementNumberProp(this.state.selectedID, rides + this.state.rides);
 
         try {
             if(this.state.isConnected) {
-                await API.addRides(this.state.selectedID, rides);
+                await API.incrementNumberProp(this.state.selectedID, rides);
             } else {
                 await LocalStorage.addUpdate({category: 'rides', id: this.state.selectedID, rides: rides});
             }

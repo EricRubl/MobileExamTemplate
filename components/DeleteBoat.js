@@ -25,7 +25,7 @@ class DeleteBoat extends React.Component {
         this.setState({spinner: true});
 
         try {
-            const boats = await API.getAllBoats();
+            const boats = await API.getAllEntities();
             this.setState({boats: boats, spinner: false});
         } catch (err) {
             Alert.alert(
@@ -43,7 +43,7 @@ class DeleteBoat extends React.Component {
         this.setState({spinner: true});
 
         try {
-            await API.deleteBoat(this.state.id);
+            await API.deleteEntity(this.state.id);
         } catch (err) {
             Alert.alert(
                 'Server error',

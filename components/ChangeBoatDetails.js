@@ -35,9 +35,9 @@ class ChangeBoatDetails extends React.Component {
 
         try {
             if (conn) {
-                boats = await API.getAllBoats();
+                boats = await API.getAllEntities();
             } else {
-                boats = await LocalStorage.getAllBoats();
+                boats = await LocalStorage.getAllEntities();
             }
 
             this.setState({boats: boats, isConnected: conn, spinner: false});
@@ -73,11 +73,11 @@ class ChangeBoatDetails extends React.Component {
 
         const status = this.state.free ? 'free' :  'busy';
 
-        await LocalStorage.changeBoat(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
+        await LocalStorage.changeEntity(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
 
         try {
             if(this.state.isConnected) {
-                await API.changeBoat(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
+                await API.changeEntity(this.state.selectedID, this.state.name, status, parseInt(this.state.seats));
             } else {
                 await LocalStorage.addUpdate({category: 'change', id: this.state.selectedID, name: this.state.name, status: status, seats: parseInt(this.state.seats)});
             }
