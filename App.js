@@ -18,14 +18,13 @@ export default class App extends React.Component {
 }
 
 const AppNavigator = createStackNavigator({
-        Login: Home,
-        EmployeeLandingPage: EmployeeLandingPage,
-        OwnerLandingPage: OwnerLandingPage,
-        ChangeBoatDetails: ChangeBoatDetails,
-        AddRides: AddRides,
-        AddBoat: AddBoat,
-        DeleteBoat: DeleteBoat,
-    });
+    Login: Home,
+    EmployeeLandingPage: EmployeeLandingPage,
+    OwnerLandingPage: OwnerLandingPage,
+    ChangeBoatDetails: ChangeBoatDetails,
+    AddRides: AddRides,
+    AddBoat: AddBoat,
+    DeleteBoat: DeleteBoat,
+});
 
 const AppContainer = createAppContainer(AppNavigator);
-
