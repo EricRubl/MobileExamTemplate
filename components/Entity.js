@@ -20,27 +20,27 @@ class Entity {
         this.rides = rides;
     }
 
-    isAvailable() {
+    static isAvailable() {
         return this.status;
     }
 
-    getFreeEntitiesURL() {
+    static getFreeEntitiesURL() {
         return '/boats';
     }
 
-    getBusyEntitiesURL() {
+    static getBusyEntitiesURL() {
         return '/busy';
     }
 
-    getChangeEntityURL() {
+    static getChangeEntityURL() {
         return '/change';
     }
 
-    getIncrementRidesURL() {
+    static getIncrementRidesURL() {
         return '/rides';
     }
 
-    getAddEntityURL() {
+    static getAddEntityURL() {
         return '/add';
     }
 
@@ -72,8 +72,8 @@ class Entity {
         return this.status ? Entity.statusFreeString : Entity.statusBusyString;
     }
 
-    static fromObject() {
-
+    static fromObject(obj) {
+        return new Entity(obj.id, obj.name, obj.model, obj.status, obj.seats, obj.rides);
     }
 
     toAddJSON() {
