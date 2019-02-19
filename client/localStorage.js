@@ -4,50 +4,47 @@ export async function clearStorage() {
     await AsyncStorage.clear();
 }
 
-export async function addBoat(boat) {
+export async function addEntity(entity) {
     try {
-        let boats = await AsyncStorage.getItem('BOATS');
+        let entities = await AsyncStorage.getItem('ENTITIES');
 
-        if (boats == null) {
-            boats = [];
+        if (entities == null) {
+            entities = [];
         } else
-            boats = JSON.parse(boats);
+            entities = JSON.parse(entities);
 
-        boats.push(boat);
-
-        await AsyncStorage.setItem('BOATS', JSON.stringify(boats));
+        await AsyncStorage.setItem('ENTITIES', JSON.stringify([...entities, entity]));
 
         return true;
     } catch (error) {
-        console.log("Error adding boat to async storage: ", error);
-
+        console.log("Error adding entity to async storage: ", error);
         return false;
     }
 }
 
-export async function changeBoat(id, name, status, seats) {
+export async function changeEntity(entity) {
     try {
-        let boats = await AsyncStorage.getItem('BOATS');
+        let entities = await AsyncStorage.getItem('ENTITIES');
 
-        boats = JSON.parse(boats);
+        entities = JSON.parse(entities);
 
-        const index = boats.findIndex(boat => boat.id === id);
+        const index = entities.findIndex(entity => entity.id === id);
 
-        boats[index].name = name;
-        boats[index].status = status;
-        boats[index].seats = seats;
+        entities[index].name = name;
+        entities[index].status = status;
+        entities[index].seats = seats;
 
-        await AsyncStorage.setItem('BOATS', JSON.stringify([...boats]));
+        await AsyncStorage.setItem('ENTITIES', JSON.stringify([...entities]));
 
         return true;
     } catch (error) {
-        console.log("Error adding fulfilled request to async storage: ", error);
+        console.log("Error changing entity in async storage: ", error);
 
         return false;
     }
 }
 
-export async function addRides(id, rides) {
+export async function incrementNumberProp(id, rides) {
     try {
         let boats = await AsyncStorage.getItem('BOATS');
 
@@ -67,7 +64,7 @@ export async function addRides(id, rides) {
     }
 }
 
-export async function getAllBoats() {
+export async function getAllEntities() {
     try {
         const boats = await AsyncStorage.getItem('BOATS');
 

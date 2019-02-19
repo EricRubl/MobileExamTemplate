@@ -1,3 +1,4 @@
+import React from 'react';
 import {ListItem} from "react-native-elements";
 
 class Entity {
@@ -43,7 +44,7 @@ class Entity {
     }
 
     statusToString() {
-        return this.status ? statusFreeString : statusBusyString;
+        return this.status ? Entity.statusFreeString : Entity.statusBusyString;
     }
 
     static fromObject() {

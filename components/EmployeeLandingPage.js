@@ -34,7 +34,7 @@ class EmployeeLandingPage extends React.Component {
         this.setState({spinner: true});
 
         try {
-            const boats = await API.getAllBoats();
+            const boats = await API.getAllEntities();
             this.setState({boats: boats, spinner: false});
         } catch (err) {
             Alert.alert(

@@ -22,7 +22,7 @@ class AddBoat extends React.Component {
         this.setState({spinner: true});
 
         try {
-            await API.addBoat(this.state.name, this.state.model, parseInt(this.state.seats));
+            await API.addEntity(this.state.name, this.state.model, parseInt(this.state.seats));
         } catch (err) {
             Alert.alert(
                 'Server error',

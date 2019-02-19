@@ -1,4 +1,4 @@
-export const IP = '192.168.0.105';  // change this according to your needs
+export const IP = '127.0.0.1';  // change this according to your needs
 export const PORT = '4022';  // and this
 const URL = 'http://' + IP + ":" + PORT;
 
@@ -11,7 +11,7 @@ function createRequestWithTimeout(ms, promise, message) {
     })
 }
 
-export async function getFreeBoats() {
+export async function getFreeEntities() {
     try {
         console.log("GET /boats. Getting free boats from server.");
         const boats = await createRequestWithTimeout(1000, fetch(URL + '/boats'), "Cannot access server");
@@ -22,7 +22,7 @@ export async function getFreeBoats() {
     }
 }
 
-export async function getBusyBoats() {
+export async function getBusyEntities() {
     try {
         console.log("GET /busy. Getting busy boats from server.");
         const boats = await createRequestWithTimeout(1000, fetch(URL + '/busy'), "Cannot access server");
@@ -33,12 +33,12 @@ export async function getBusyBoats() {
     }
 }
 
-export async function getAllBoats() {
+export async function getAllEntities() {
     let boats = [];
 
     try {
-        await getFreeBoats().then(free => boats = boats.concat(free));
-        await getBusyBoats().then(busy => boats = boats.concat(busy));
+        await getFreeEntities().then(free => boats = boats.concat(free));
+        await getBusyEntities().then(busy => boats = boats.concat(busy));
     } catch (err) {
         throw Error('Cannot get boats from the server 😥');
     }
@@ -47,7 +47,7 @@ export async function getAllBoats() {
     return boats;
 }
 
-export async function changeBoat(id, name, status, seats) {
+export async function changeEntity(id, name, status, seats) {
     try {
         console.log("POST /change. Changing boat details.");
         let request = fetch(URL + '/change', {
@@ -71,7 +71,7 @@ export async function changeBoat(id, name, status, seats) {
     }
 }
 
-export async function addRides(id, rides) {
+export async function incrementNumberProp(id, rides) {
     try {
         console.log("POST /rides. Changing boat details.");
         let request = fetch(URL + '/rides', {
@@ -93,7 +93,7 @@ export async function addRides(id, rides) {
     }
 }
 
-export async function addBoat(name, model, seats) {
+export async function addEntity(name, model, seats) {
     try {
         console.log("POST /new. Adding boat.");
         let request = fetch(URL + '/new', {
@@ -116,7 +116,7 @@ export async function addBoat(name, model, seats) {
     }
 }
 
-export async function deleteBoat(id) {
+export async function deleteEntity(id) {
     try {
         console.log("DELETE /boat. Deleting boat.");
         let request = fetch(URL + '/boat/' + id.toString(), {
