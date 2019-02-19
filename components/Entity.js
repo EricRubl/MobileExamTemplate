@@ -13,7 +13,7 @@ class Entity {
         // string - model of the entity
         this.model = model;
         // boolean - status of the entity
-        this.status = status === Entity.statusFreeString ? true : false;
+        this.status = status === Entity.statusFreeString;
         // number - number seats
         this.seats = seats;
         // number - number of times the entity was used
