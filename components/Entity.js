@@ -1,6 +1,9 @@
 import {ListItem} from "react-native-elements";
 
 class Entity {
+    static statusFreeString = 'free';
+    static statusBusyString = 'busy';
+
     constructor(id, name, model, status, seats, rides) {
         // number - id from the DB
         this.id = id;
@@ -9,13 +12,13 @@ class Entity {
         // string - model of the entity
         this.model = model;
         // boolean - status of the entity
-        this.status = status === 'free' ? true : false;
+        this.status = status === Entity.statusFreeString ? true : false;
         // number - number of times the entity was used
         this.rides = rides;
     }
 
     isAvailable() {
-        return this.status === true;
+        return this.status;
     }
 
     toListItem() {
@@ -27,7 +30,7 @@ class Entity {
     }
 
     statusToString() {
-        return this.status ? 'free' : 'busy';
+        return this.status ? statusFreeString : statusBusyString;
     }
 
     static fromObject() {
