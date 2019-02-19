@@ -35,6 +35,10 @@ class Entity {
         this.rides = updater.rides;
     }
 
+    incrementNumberProp() {
+
+    }
+
     toListItem() {
         return <ListItem
             key={this.id}

@@ -28,53 +28,40 @@ export async function changeEntity(entity) {
 
         entities = JSON.parse(entities);
 
-        const index = entities.findIndex(entity => entity.id === id);
-
-        entities[index].name = name;
-        entities[index].status = status;
-        entities[index].seats = seats;
+        entities.filter(e => e.id === entity.id).map(e => e.update(entity));
 
         await AsyncStorage.setItem('ENTITIES', JSON.stringify([...entities]));
 
-        return true;
     } catch (error) {
         console.log("Error changing entity in async storage: ", error);
-
-        return false;
     }
 }
 
-export async function incrementNumberProp(id, rides) {
+export async function incrementNumberProp(id, increment) {
     try {
-        let boats = await AsyncStorage.getItem('BOATS');
+        let entities = await AsyncStorage.getItem('ENTITIES');
 
-        boats = JSON.parse(boats);
+        entities = JSON.parse(entities);
 
-        const index = boats.findIndex(boat => boat.id === id);
+        entities.filter(e => e.id === id).map(e => e.incrementNumberProp(increment));
 
-        boats[index].rides = rides;
+        await AsyncStorage.setItem('BOATS', JSON.stringify([...entities]));
 
-        await AsyncStorage.setItem('BOATS', JSON.stringify([...boats]));
-
-        return true;
     } catch (error) {
         console.log("Error adding fulfilled request to async storage: ", error);
-
-        return false;
     }
 }
 
 export async function getAllEntities() {
     try {
-        const boats = await AsyncStorage.getItem('BOATS');
+        const entities = await AsyncStorage.getItem('BOATS');
 
-        if (boats !== null) {
-            return JSON.parse(boats);
+        if (entities !== null) {
+            return JSON.parse(entities);
         } else
             return [];
     } catch (error) {
         console.log("Error retrieving records from local storage: ", error);
-
         return [];
     }
 }
@@ -89,7 +76,6 @@ export async function getAllUpdates() {
             return [];
     } catch (error) {
         console.log("Error retrieving records from local storage: ", error);
-
         return [];
     }
 }
